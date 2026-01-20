@@ -1,6 +1,13 @@
+import 'intent_gatekeeper.dart';
+
 /// Input Validation Service
-/// Detects gibberish, spam, and nonsensical input
-/// Ensures only meaningful decisions are processed
+/// 
+/// 3-Layer Validation Pipeline:
+/// Layer 1: Intent Gatekeeper (filters trivial questions)
+/// Layer 2: Gibberish/spam detection (this file)
+/// Layer 3: AI Narrative Orchestrator (external)
+/// 
+/// A serious product is defined by what it refuses to do.
 class InputValidator {
   /// Minimum ratio of unique characters to total (prevents "aaaaaaa")
   static const double _minUniqueCharRatio = 0.25;
@@ -52,7 +59,23 @@ class InputValidator {
       );
     }
 
-    // Check for excessive character repetition
+    // ═══════════════════════════════════════════════════════════════════════
+    // LAYER 1: Intent Gatekeeper
+    // Filters out trivial questions that don't need reflection
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    final gatekeeperResult = IntentGatekeeper.check(trimmed);
+    if (!gatekeeperResult.isValidDecision) {
+      return ValidationResult(
+        isValid: false,
+        reason: gatekeeperResult.rejectionMessage,
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LAYER 2: Gibberish/Spam Detection
+    // ═══════════════════════════════════════════════════════════════════════
+
     if (_hasExcessiveRepetition(trimmed)) {
       return ValidationResult(
         isValid: false,
