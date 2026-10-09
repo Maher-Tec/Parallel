@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ambient_background.dart';
+import '../widgets/parallel_path_animation.dart';
 import 'input_screen.dart';
 import 'history_screen.dart';
 import 'about_screen.dart';
@@ -41,7 +42,13 @@ class LaunchScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 20),
+                const ParallelPathAnimation(
+                  width: 140,
+                  height: 100,
+                  showLabels: false,
+                ),
+                const SizedBox(height: 20),
                 // Concept text
                 Text(
                   'Write a decision you are facing.',

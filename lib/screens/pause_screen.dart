@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../theme/app_theme.dart';
 import '../services/ai_service.dart';
 import '../services/fallback_service.dart';
 import '../services/memory_service.dart';
 import '../storage/local_store.dart';
 import '../widgets/ambient_background.dart';
+import '../widgets/parallel_path_animation.dart';
 import 'result_screen.dart';
 
 /// S2 — Pause / Reflection Screen
@@ -159,14 +159,14 @@ class _PauseScreenState extends State<PauseScreen>
 
   Future<void> _generateFutures() async {
     try {
-      // Try OpenAI first, with memory context if available
+      // Primary: Google Gemini
       _results = await _aiService.generateFutures(
         decision: widget.decision,
         tone: widget.tone,
         memoryContext: _memoryContext,
       );
     } catch (e) {
-      // Fallback to OpenRouter
+      debugPrint('Gemini API call failed: $e. Falling back to OpenRouter...');
       try {
         _results = await _fallbackService.generateFutures(
           decision: widget.decision,
@@ -174,6 +174,7 @@ class _PauseScreenState extends State<PauseScreen>
           memoryContext: _memoryContext,
         );
       } catch (fallbackError) {
+        debugPrint('Fallback error: $fallbackError');
         if (mounted) {
           setState(() {
             _error = 'Unable to generate futures. Please try again.';
@@ -264,17 +265,16 @@ class _PauseScreenState extends State<PauseScreen>
                       ),
                     ),
                   ] else ...[
-                    // Loading state with Lottie
-                    SizedBox(
-                      width: 180,
-                      height: 180,
-                      child: Lottie.asset(
-                        'assets/loading.json',
-                        fit: BoxFit.contain,
-                      ),
+                    // Parallel Path Animation
+                    const ParallelPathAnimation(
+                      width: 240,
+                      height: 190,
+                      showLabels: true,
+                      leftLabel: 'IF YOU ACT',
+                      rightLabel: "IF YOU DON'T",
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // Primary text
                     Text(

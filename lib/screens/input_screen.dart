@@ -110,275 +110,286 @@ class _InputScreenState extends State<InputScreen>
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final isKeyboardOpen = bottomInset > 0;
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.translucent,
+      child: Scaffold(
         backgroundColor: AppTheme.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textSecondary),
-          onPressed: () => Navigator.of(context).pop(),
+        resizeToAvoidBottomInset: true,
+        appBar: AppBar(
+          backgroundColor: AppTheme.background,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppTheme.textSecondary),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
-      body: AmbientBackground(
-        showParticles: !isKeyboardOpen, // Disable particles when keyboard open for performance
-        child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        // Header
-                        Text(
-                          'What is the decision?',
-                          style: AppTheme.titleMedium(context),
-                        ),
-                        const SizedBox(height: 16),
+        body: AmbientBackground(
+          showParticles: !isKeyboardOpen,
+          child: SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  // Header
+                  Text(
+                    'What is the decision?',
+                    style: AppTheme.titleMedium(context),
+                  ),
+                  const SizedBox(height: 16),
 
-                        // Text input area
-                        Container(
-                          height: isKeyboardOpen ? 120 : 180,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _focusNode.hasFocus
-                                  ? AppTheme.withAlpha(AppTheme.textPrimary, 0.3)
-                                  : AppTheme.divider,
-                              width: 1,
-                            ),
+                  // Text input area
+                  Container(
+                    height: isKeyboardOpen ? 130 : 170,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _focusNode.hasFocus
+                            ? AppTheme.withAlpha(AppTheme.textPrimary, 0.3)
+                            : AppTheme.divider,
+                        width: 1,
+                      ),
+                    ),
+                    child: Directionality(
+                      textDirection:
+                          _isRTL ? TextDirection.rtl : TextDirection.ltr,
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        maxLength: _maxChars,
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        textAlign: _isRTL ? TextAlign.right : TextAlign.left,
+                        style: AppTheme.bodyLarge(context),
+                        decoration: InputDecoration(
+                          hintText: _isRTL
+                              ? 'ماذا يقلقك؟ اكتب هنا...'
+                              : 'Should I move to another country even if it means starting over?',
+                          hintStyle: AppTheme.bodyLarge(context).copyWith(
+                            color: AppTheme.withAlpha(
+                                AppTheme.textSecondary, 0.4),
                           ),
-                          child: Directionality(
-                            textDirection:
-                                _isRTL ? TextDirection.rtl : TextDirection.ltr,
-                            child: TextField(
-                              controller: _controller,
-                              focusNode: _focusNode,
-                              maxLength: _maxChars,
-                              maxLines: null,
-                              expands: true,
-                              textAlignVertical: TextAlignVertical.top,
-                              textAlign: _isRTL ? TextAlign.right : TextAlign.left,
-                              style: AppTheme.bodyLarge(context),
-                              decoration: InputDecoration(
-                                hintText: _isRTL
-                                    ? 'ماذا يقلقك؟ اكتب هنا...'
-                                    : 'Should I move to another country even if it means starting over?',
-                                hintStyle: AppTheme.bodyLarge(context).copyWith(
-                                  color: AppTheme.withAlpha(
-                                      AppTheme.textSecondary, 0.4),
-                                ),
-                                border: InputBorder.none,
-                                counterText: '',
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              cursorColor: AppTheme.textPrimary,
-                              autofocus: true,
-                            ),
-                          ),
+                          border: InputBorder.none,
+                          counterText: '',
+                          contentPadding: EdgeInsets.zero,
                         ),
-                        const SizedBox(height: 12),
-
-                        // Character counter
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: _charCount > 0 && _charCount < _minChars
-                                ? AppTheme.withAlpha(AppTheme.accent, 0.1)
-                                : AppTheme.surface,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Progress indicator
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  value: (_charCount / _minChars).clamp(0.0, 1.0),
-                                  strokeWidth: 2,
-                                  backgroundColor: AppTheme.divider,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    _charCount >= _minChars
-                                        ? Colors.green.shade400
-                                        : AppTheme.accent,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$_charCount / $_maxChars',
-                                style: AppTheme.bodySmall(context).copyWith(
-                                  color: _charCount < _minChars
-                                      ? AppTheme.accent
-                                      : AppTheme.textSecondary,
-                                  fontWeight: _charCount >= _minChars
-                                      ? FontWeight.w500
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              if (_charCount > 0 && _charCount < _minChars) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  '• ${_minChars - _charCount} more',
-                                  style: AppTheme.bodySmall(context).copyWith(
-                                    color: AppTheme.accent,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Tone selector - compact when keyboard is open
-                        Text(
-                          'Tone',
-                          style: AppTheme.bodySmall(context).copyWith(
-                            color: AppTheme.textSecondary,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _ToneChip(
-                                label: 'Reflective',
-                                isSelected: _tone == 'reflective',
-                                onTap: () => setState(() => _tone = 'reflective'),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _ToneChip(
-                                label: 'Light',
-                                isSelected: _tone == 'light',
-                                onTap: () => setState(() => _tone = 'light'),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const Spacer(),
-
-                        // Validation error display
-                        if (_validationError != null)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: AppTheme.withAlpha(AppTheme.accent, 0.15),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: AppTheme.withAlpha(AppTheme.accent, 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  size: 18,
-                                  color: AppTheme.accent,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    _validationError!,
-                                    style: AppTheme.bodySmall(context).copyWith(
-                                      color: AppTheme.accent,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        // CTA Button
-                        AnimatedBuilder(
-                          animation: _glowAnimation,
-                          builder: (context, child) {
-                            return Container(
-                              width: double.infinity,
-                              decoration: _meetsMinLength
-                                  ? BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppTheme.textPrimary.withAlpha(
-                                              (_glowAnimation.value * 40).round()),
-                                          blurRadius: 20,
-                                          spreadRadius: 0,
-                                        ),
-                                      ],
-                                    )
-                                  : null,
-                              child: TextButton(
-                                onPressed: _meetsMinLength ? _simulate : null,
-                                style: TextButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  backgroundColor: _meetsMinLength
-                                      ? AppTheme.textPrimary
-                                      : AppTheme.surface,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Simulate both paths',
-                                      style: AppTheme.button(context).copyWith(
-                                        color: _meetsMinLength
-                                            ? AppTheme.background
-                                            : AppTheme.withAlpha(
-                                                AppTheme.textSecondary, 0.4),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    if (_meetsMinLength) ...[
-                                      const SizedBox(width: 8),
-                                      Icon(
-                                        Icons.arrow_forward,
-                                        color: AppTheme.background,
-                                        size: 18,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        SizedBox(height: isKeyboardOpen ? 16 : 32),
-                      ],
+                        cursorColor: AppTheme.textPrimary,
+                        autofocus: true,
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+
+                  // Character counter
+                  _buildCharacterCounter(context),
+
+                  const SizedBox(height: 20),
+
+                  // Tone selector
+                  Text(
+                    'Tone',
+                    style: AppTheme.bodySmall(context).copyWith(
+                      color: AppTheme.textSecondary,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ToneChip(
+                          label: 'Reflective',
+                          isSelected: _tone == 'reflective',
+                          onTap: () => setState(() => _tone = 'reflective'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _ToneChip(
+                          label: 'Light',
+                          isSelected: _tone == 'light',
+                          onTap: () => setState(() => _tone = 'light'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-            );
-          },
+            ),
+          ),
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              8,
+              24,
+              isKeyboardOpen ? 12 : 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_validationError != null) ...[
+                  _buildValidationError(context),
+                  const SizedBox(height: 10),
+                ],
+                _buildCtaButton(context),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCharacterCounter(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _charCount > 0 && _charCount < _minChars
+            ? AppTheme.withAlpha(AppTheme.accent, 0.1)
+            : AppTheme.surface,
+        borderRadius: BorderRadius.circular(8),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              value: (_charCount / _minChars).clamp(0.0, 1.0),
+              strokeWidth: 2,
+              backgroundColor: AppTheme.divider,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                _charCount >= _minChars
+                    ? Colors.green.shade400
+                    : AppTheme.accent,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$_charCount / $_maxChars',
+            style: AppTheme.bodySmall(context).copyWith(
+              color: _charCount < _minChars
+                  ? AppTheme.accent
+                  : AppTheme.textSecondary,
+              fontWeight: _charCount >= _minChars
+                  ? FontWeight.w500
+                  : FontWeight.normal,
+            ),
+          ),
+          if (_charCount > 0 && _charCount < _minChars) ...[
+            const SizedBox(width: 8),
+            Text(
+              '• ${_minChars - _charCount} more',
+              style: AppTheme.bodySmall(context).copyWith(
+                color: AppTheme.accent,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildValidationError(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.withAlpha(AppTheme.accent, 0.15),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppTheme.withAlpha(AppTheme.accent, 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 18,
+            color: AppTheme.accent,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _validationError!,
+              style: AppTheme.bodySmall(context).copyWith(
+                color: AppTheme.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCtaButton(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          width: double.infinity,
+          decoration: _meetsMinLength
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.textPrimary
+                          .withAlpha((_glowAnimation.value * 40).round()),
+                      blurRadius: 20,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                )
+              : null,
+          child: TextButton(
+            onPressed: _meetsMinLength ? _simulate : null,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor:
+                  _meetsMinLength ? AppTheme.textPrimary : AppTheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Simulate both paths',
+                  style: AppTheme.button(context).copyWith(
+                    color: _meetsMinLength
+                        ? AppTheme.background
+                        : AppTheme.withAlpha(AppTheme.textSecondary, 0.4),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (_meetsMinLength) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: AppTheme.background,
+                    size: 18,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

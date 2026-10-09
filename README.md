@@ -10,14 +10,38 @@ Parallel is a reflective decision-exploration app that helps you visualize the c
 
 ---
 
+## 🔑 Quick API Setup
+
+> [!IMPORTANT]
+> ### ⚡ Required Configuration Before Running
+> Parallel uses **Google Gemini (Free Tier)** as its primary narrative intelligence engine. To run the app, you need a free API key from Google AI Studio.
+> 
+> 1. **Copy the environment template:**
+>    ```bash
+>    cp .env.example .env
+>    ```
+> 2. **Add your free Google Gemini API key to `.env`:**
+>    ```env
+>    GEMINI_API_KEY=your_actual_gemini_api_key_here
+>    ```
+>    👉 Get a free Gemini API key in seconds: **[Google AI Studio](https://aistudio.google.com/)** *(No credit card required)*
+> 
+> > [!NOTE]
+> > Never commit your `.env` file to Git. The `.gitignore` file is pre-configured to keep your keys safe.
+
+---
+
 ## ✨ Features
 
-- **Dual Narrative Generation** — AI-powered stories exploring both paths of your decision
+- **Dual Narrative Generation** — AI-powered stories exploring both paths of your decision (Act vs. Don't Act)
+- **Primary AI: Gemini 3.5 Flash** — High-speed (~5s) reflective storytelling with zero token hallucination
+- **Seamless Fallback** — Secondary fallback powered by OpenRouter (`nvidia/nemotron-3-super-120b-a12b:free`)
 - **Tone Selection** — Choose between *Reflective* (serious, introspective) or *Light* (depth without gravity)
-- **Multi-Language Support** — Write in any language (English, French, Arabic, Tunisian dialect) and get responses in the same language
-- **Memory Continuity** — The app subtly recognizes recurring themes in your decisions
-- **Beautiful Dark Aesthetic** — Calm, literary design with warm typography
-- **Local History** — All your past explorations saved privately on your device
+- **Multi-Language & Dialect Matching** — Detects and writes in your exact language/dialect (English, French, Arabic, Tunisian Derja)
+- **Parallel Path Animation** — Custom 60fps vector animation visualizing the diverging streams of choice
+- **Memory Continuity** — Subtly recognizes recurring themes across past decisions
+- **Keyboard-Adaptive UX** — Docked action bar with safe space that automatically floats above the keyboard
+- **Local History & Privacy** — Up to 50 past explorations stored entirely on-device (FIFO storage)
 
 ---
 
@@ -41,7 +65,7 @@ Parallel is a reflective decision-exploration app that helps you visualize the c
 ### Prerequisites
 
 - Flutter SDK 3.10.3 or higher
-- OpenAI API key
+- A free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/)
 
 ### Installation
 
@@ -57,10 +81,12 @@ Parallel is a reflective decision-exploration app that helps you visualize the c
    ```
 
 3. **Configure environment**
-   
-   Create a `.env` file in the root directory:
+   ```bash
+   cp .env.example .env
+   ```
+   Open `.env` and paste your key:
    ```env
-   OPENAI_API_KEY=your_openai_api_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
 4. **Run the app**
@@ -74,44 +100,46 @@ Parallel is a reflective decision-exploration app that helps you visualize the c
 
 ```
 lib/
-├── main.dart                 # App entry point
+├── main.dart                      # App entry point, .env loading & theme setup
 ├── theme/
-│   └── app_theme.dart        # Dark literary theme
+│   └── app_theme.dart             # Dark literary palette & typography
 ├── screens/
-│   ├── splash_screen.dart    # Animated splash
-│   ├── launch_screen.dart    # Welcome screen
-│   ├── input_screen.dart     # Decision input
-│   ├── pause_screen.dart     # Loading state
-│   ├── result_screen.dart    # Dual narratives
-│   ├── history_screen.dart   # Past explorations
-│   └── about_screen.dart     # App info
+│   ├── splash_screen.dart         # Startup brand animation
+│   ├── launch_screen.dart         # Intro screen with mini path motif
+│   ├── input_screen.dart          # Decision input, tone chips, docked CTA bar
+│   ├── pause_screen.dart          # Async AI loading with ParallelPathAnimation
+│   ├── result_screen.dart         # Dual-tab narrative reading view
+│   ├── history_screen.dart        # Saved reflections repository
+│   └── about_screen.dart          # Philosophy & app info
 ├── services/
-│   ├── ai_service.dart       # OpenAI integration
-│   ├── fallback_service.dart # DeepSeek fallback
-│   ├── memory_service.dart   # Continuity detection
-│   └── input_validator.dart  # Input filtering
+│   ├── ai_service.dart            # Primary Gemini 3.5 Flash integration
+│   ├── fallback_service.dart      # OpenRouter Nemotron fallback
+│   ├── memory_service.dart        # Tag extraction & continuity matching
+│   ├── input_validator.dart       # Layer 2 gibberish/repetition heuristics
+│   └── intent_gatekeeper.dart     # Layer 1 decision-worthiness filter
 ├── models/
-│   └── decision_entry.dart   # Data model
+│   └── decision_entry.dart        # Local decision entry model
 ├── storage/
-│   └── local_store.dart      # SharedPreferences
+│   └── local_store.dart           # SharedPreferences FIFO repository
 └── widgets/
-    └── ambient_background.dart # Animated background
+    ├── ambient_background.dart    # Ambient background particles
+    └── parallel_path_animation.dart # Custom 60fps vector bifurcating path
 ```
 
 ---
 
 ## 🎨 Design Philosophy
 
-- **Literary Aesthetic** — Inspired by opening a book, not an app
-- **Emotional Safety** — No advice, no judgment, just exploration
-- **Grounded Realism** — Stories stay true to your situation
-- **Calm Contrast** — Dark theme with warm off-white typography
+- **Literary Aesthetic** — Inspired by opening a physical book, not an app
+- **Emotional Safety** — No advice, no judgment, no moral conclusions
+- **Grounded Realism** — Concrete sensory details and human consequence
+- **Calm Contrast** — Deep obsidian (`#0A0A0A`) with warm parchment typography (`#F5F0E8`)
 
 ---
 
 ## 📄 License
 
-This project is private and proprietary.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 

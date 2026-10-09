@@ -3,11 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// OpenRouter Fallback Service
-/// Activated when OpenAI fails (quota, timeout, etc.)
-/// User never sees the fallback - seamless switch
+/// Activated when primary AI fails (quota, timeout, etc.)
 class FallbackService {
   static const String _apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-  static const String _model = "meta-llama/llama-3.3-70b-instruct:free";
+  static const String _model = "nvidia/nemotron-3-super-120b-a12b:free";
 
   static const int _maxTokens = 900;
   static const double _temperature = 0.7;
@@ -16,7 +15,7 @@ class FallbackService {
   /// Get API key from environment
   static String get _apiKey => dotenv.env['OPENROUTER_API_KEY'] ?? '';
 
-  /// System prompt - same as primary
+  /// System prompt
   static const String _systemPrompt = """
 You are a reflective fiction writer.
 
@@ -24,68 +23,41 @@ Your task is to explore two parallel futures based on a human decision.
 
 Writing principles:
 - Stay FOCUSED on the exact decision the user describes
-- Do NOT add random details (seasons, weather, time of day) unless the user mentioned them
-- Do NOT invent context that wasn't in the question
-- Grounded, realistic storytelling based on THEIR situation
-- Emotions shown through actions and moments
-- Calm, intimate tone
-- No melodrama, no fantasy
-
-You do not give advice.
-You do not judge.
-You do not recommend.
+- Grounded, realistic storytelling based on their situation
+- Second person ("you")
+- No advice. No judgment. No moral conclusion.
 """;
 
   /// Tone modifiers
   static String _getToneModifier(String tone) {
     if (tone == 'light') {
       return """
-Writing tone:
-Warm and gently humorous.
-Soft, human lightness.
-No sarcasm.
-No ridicule.
-No exaggeration.
+Writing tone: LIGHT
+Warm and gentle irony. Emotions mixed but not crushing.
 """;
     }
     return """
 Writing tone:
-Serious, calm, introspective.
-Emotionally grounded.
+Serious, calm, introspective, emotionally grounded.
 """;
   }
 
-  /// Build the user prompt
+  /// Build user prompt
   static String _buildUserPrompt(String decision, String tone) {
     final toneModifier = _getToneModifier(tone);
 
     return """
 **CRITICAL LANGUAGE RULE:**
-The user wrote their decision in a specific language/dialect.
-You MUST write your ENTIRE response in that EXACT same language.
-- If they wrote in Tunisian Arabic (تونسي), write in Tunisian Arabic, NOT English, NOT formal Arabic.
-- If they wrote in French, write in French.
-- If they wrote in English, write in English.
-- DETECT their language from the decision text below and MATCH IT EXACTLY.
+Write in the EXACT SAME LANGUAGE/DIALECT as the decision below (Tunisian Arabic, French, or English).
 
 $toneModifier
 
-Decision (detect language from this):
+Decision:
 $decision
 
 Write two short reflective stories in SECOND PERSON ("you") in the SAME LANGUAGE as the decision above:
-
 1) IF YOU ACT
 2) IF YOU DO NOT ACT
-
-Rules:
-- 250–400 words per story
-- Second person ("you")
-- No moral conclusion
-- No advice
-- Focus on realistic consequences over time
-- Keep the tone human and believable
-- WRITE IN THE SAME LANGUAGE AS THE USER'S DECISION
 
 Format EXACTLY as:
 ===STORY_ACT===
@@ -96,8 +68,7 @@ Format EXACTLY as:
 """;
   }
 
-  /// Generate parallel futures using OpenRouter
-  /// Optional memoryContext adds subtle continuity awareness
+  /// Generate parallel futures
   Future<Map<String, String>> generateFutures({
     required String decision,
     required String tone,
@@ -107,9 +78,8 @@ Format EXACTLY as:
       throw Exception('OpenRouter API key not configured');
     }
 
-    // Build system prompt with optional memory context
     String systemPrompt = _systemPrompt;
-    if (memoryContext != null) {
+    if (memoryContext != null && memoryContext.isNotEmpty) {
       systemPrompt = '$_systemPrompt\n\n$memoryContext';
     }
 
@@ -135,11 +105,21 @@ Format EXACTLY as:
         .timeout(_timeout);
 
     if (response.statusCode != 200) {
-      throw Exception('OpenRouter API error: ${response.statusCode}');
+      throw Exception('OpenRouter API error ${response.statusCode}: ${response.body}');
     }
 
     final data = jsonDecode(response.body);
-    final content = data['choices'][0]['message']['content'] as String;
+    final choices = data['choices'] as List?;
+    if (choices == null || choices.isEmpty) {
+      throw Exception('No choices returned by OpenRouter');
+    }
+
+    final rawContent = choices[0]['message']?['content'];
+    final content = (rawContent != null) ? rawContent.toString() : '';
+
+    if (content.trim().isEmpty) {
+      throw Exception('Empty content from OpenRouter fallback');
+    }
 
     return _parseResponse(content);
   }
@@ -164,12 +144,7 @@ Format EXACTLY as:
 
     // Fallback parsing if markers not found
     if (ifAct.isEmpty || ifNot.isEmpty) {
-      final patterns = [
-        'IF YOU DO NOT ACT',
-        'IF YOU DON\'T ACT',
-        '2)',
-        '2.',
-      ];
+      final patterns = ['IF YOU DO NOT ACT', 'IF YOU DON\'T ACT', '2)', '2.'];
 
       for (final pattern in patterns) {
         if (content.contains(pattern)) {
@@ -177,7 +152,6 @@ Format EXACTLY as:
           ifAct = content.substring(0, idx).trim();
           ifNot = content.substring(idx).trim();
 
-          // Clean up
           final actPatterns = ['IF YOU ACT', '1)', '1.'];
           for (final p in actPatterns) {
             final pIdx = ifAct.indexOf(p);
@@ -192,16 +166,12 @@ Format EXACTLY as:
       }
     }
 
-    // Last resort: split in half
     if (ifAct.isEmpty && ifNot.isEmpty) {
       final mid = content.length ~/ 2;
       ifAct = content.substring(0, mid).trim();
       ifNot = content.substring(mid).trim();
     }
 
-    return {
-      'ifAct': ifAct,
-      'ifNot': ifNot,
-    };
+    return {'ifAct': ifAct, 'ifNot': ifNot};
   }
 }
