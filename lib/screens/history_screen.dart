@@ -107,7 +107,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       itemCount: _entries.length,
-      separatorBuilder: (_, __) => const Divider(
+      separatorBuilder: (_, index) => const Divider(
         color: AppTheme.divider,
         height: 1,
       ),

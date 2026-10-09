@@ -1,11 +1,11 @@
-/// Intent Gatekeeper Service
-/// Layer 1 of the validation pipeline
-/// 
-/// Filters out trivial choices that don't need reflection.
-/// A serious product is defined by what it refuses to do.
-/// 
-/// RULE: Accept only genuine life decisions with emotional uncertainty.
-/// No loops. No autonomy. No advice. Just filtering.
+// Intent Gatekeeper Service
+// Layer 1 of the validation pipeline
+// 
+// Filters out trivial choices that don't need reflection.
+// A serious product is defined by what it refuses to do.
+// 
+// RULE: Accept only genuine life decisions with emotional uncertainty.
+// No loops. No autonomy. No advice. Just filtering.
 
 /// Result from the Intent Gatekeeper
 class IntentGatekeeperResult {
