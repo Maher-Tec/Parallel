@@ -1,12 +1,12 @@
 import 'intent_gatekeeper.dart';
 
 /// Input Validation Service
-/// 
+///
 /// 3-Layer Validation Pipeline:
 /// Layer 1: Intent Gatekeeper (filters trivial questions)
 /// Layer 2: Gibberish/spam detection (this file)
 /// Layer 3: AI Narrative Orchestrator (external)
-/// 
+///
 /// A serious product is defined by what it refuses to do.
 class InputValidator {
   /// Minimum ratio of unique characters to total (prevents "aaaaaaa")
@@ -18,7 +18,9 @@ class InputValidator {
   /// Common patterns that indicate gibberish
   static final List<RegExp> _gibberishPatterns = [
     RegExp(r'(.)\1{4,}'), // Same character 5+ times in a row
-    RegExp(r'^[^aeiouAEIOUأإاآوىيةء\s]{10,}$'), // 10+ consonants only (no vowels)
+    RegExp(
+      r'^[^aeiouAEIOUأإاآوىيةء\s]{10,}$',
+    ), // 10+ consonants only (no vowels)
     RegExp(r'^[\W\d\s]+$'), // Only special chars, numbers, spaces
     RegExp(r'[qwfpgjluyQWFPGJLUY]{6,}'), // Keyboard left-hand spam
     RegExp(r'[zxcvbnmZXCVBNM]{6,}'), // Keyboard bottom row spam
@@ -27,25 +29,103 @@ class InputValidator {
 
   /// Words that indicate a real question/decision (English)
   static final Set<String> _decisionIndicators = {
-    'should', 'would', 'could', 'can', 'will', 'do', 'is', 'are', 'if',
-    'whether', 'want', 'need', 'think', 'feel', 'maybe', 'perhaps',
-    'or', 'and', 'but', 'because', 'what', 'how', 'why', 'when',
-    'move', 'leave', 'stay', 'quit', 'start', 'stop', 'change', 'keep',
-    'tell', 'say', 'ask', 'accept', 'reject', 'try', 'give', 'take',
+    'should',
+    'would',
+    'could',
+    'can',
+    'will',
+    'do',
+    'is',
+    'are',
+    'if',
+    'whether',
+    'want',
+    'need',
+    'think',
+    'feel',
+    'maybe',
+    'perhaps',
+    'or',
+    'and',
+    'but',
+    'because',
+    'what',
+    'how',
+    'why',
+    'when',
+    'move',
+    'leave',
+    'stay',
+    'quit',
+    'start',
+    'stop',
+    'change',
+    'keep',
+    'tell',
+    'say',
+    'ask',
+    'accept',
+    'reject',
+    'try',
+    'give',
+    'take',
   };
 
   /// Arabic decision indicators
   static final Set<String> _arabicIndicators = {
-    'هل', 'لو', 'اذا', 'إذا', 'ممكن', 'لازم', 'يجب', 'أريد', 'عايز', 'نحب',
-    'باش', 'بش', 'وإلا', 'ولا', 'كيف', 'كيفاش', 'علاش', 'ليش', 'متى', 'وين',
-    'أو', 'او', 'لكن', 'بس', 'خلاص', 'يعني', 'قررت', 'حيرة', 'محتار',
+    'هل',
+    'لو',
+    'اذا',
+    'إذا',
+    'ممكن',
+    'لازم',
+    'يجب',
+    'أريد',
+    'عايز',
+    'نحب',
+    'باش',
+    'بش',
+    'وإلا',
+    'ولا',
+    'كيف',
+    'كيفاش',
+    'علاش',
+    'ليش',
+    'متى',
+    'وين',
+    'أو',
+    'او',
+    'لكن',
+    'بس',
+    'خلاص',
+    'يعني',
+    'قررت',
+    'حيرة',
+    'محتار',
   };
 
   /// French decision indicators
   static final Set<String> _frenchIndicators = {
-    'est-ce', 'dois', 'devrais', 'pourrais', 'faut', 'veux', 'peux',
-    'si', 'ou', 'peut-être', 'comment', 'pourquoi', 'quand', 'où',
-    'partir', 'rester', 'quitter', 'commencer', 'arrêter', 'changer',
+    'est-ce',
+    'dois',
+    'devrais',
+    'pourrais',
+    'faut',
+    'veux',
+    'peux',
+    'si',
+    'ou',
+    'peut-être',
+    'comment',
+    'pourquoi',
+    'quand',
+    'où',
+    'partir',
+    'rester',
+    'quitter',
+    'commencer',
+    'arrêter',
+    'changer',
   };
 
   /// Validate input and return result
@@ -55,7 +135,7 @@ class InputValidator {
     if (trimmed.isEmpty) {
       return ValidationResult(
         isValid: false,
-        reason: 'Please enter your decision.',
+        reason: 'Please enter your dream.',
       );
     }
 
@@ -63,9 +143,10 @@ class InputValidator {
     // LAYER 1: Intent Gatekeeper
     // Filters out trivial questions that don't need reflection
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     final gatekeeperResult = IntentGatekeeper.check(trimmed);
-    if (!gatekeeperResult.isValidDecision) {
+    if (!gatekeeperResult.isValidDecision &&
+        !IntentGatekeeper.isValidGoal(trimmed)) {
       return ValidationResult(
         isValid: false,
         reason: gatekeeperResult.rejectionMessage,
@@ -79,7 +160,7 @@ class InputValidator {
     if (_hasExcessiveRepetition(trimmed)) {
       return ValidationResult(
         isValid: false,
-        reason: 'Please enter a real decision or question.',
+        reason: 'Please enter a real dream or goal.',
       );
     }
 
@@ -88,7 +169,7 @@ class InputValidator {
       if (pattern.hasMatch(trimmed)) {
         return ValidationResult(
           isValid: false,
-          reason: 'This doesn\'t look like a decision. Try rephrasing.',
+          reason: 'This doesn\'t look like a dream. Try rephrasing.',
         );
       }
     }
@@ -170,9 +251,5 @@ class ValidationResult {
   final String? reason;
   final String? warning;
 
-  ValidationResult({
-    required this.isValid,
-    this.reason,
-    this.warning,
-  });
+  ValidationResult({required this.isValid, this.reason, this.warning});
 }

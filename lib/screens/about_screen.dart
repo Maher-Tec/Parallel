@@ -16,10 +16,7 @@ class AboutScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppTheme.textSecondary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'About',
-          style: AppTheme.titleSmall(context),
-        ),
+        title: Text('About', style: AppTheme.titleSmall(context)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -32,22 +29,22 @@ class AboutScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Parallel explores decisions through quiet, fictional futures.',
+                    'Ufuq helps turn a dream into small, practical steps.',
                     style: AppTheme.bodyLarge(context),
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'It does not give advice.',
-                    style: AppTheme.bodyMedium(context).copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
+                    'It offers a grounded scenario, not a promise about what will happen.',
+                    style: AppTheme.bodyMedium(
+                      context,
+                    ).copyWith(color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'It does not judge.',
-                    style: AppTheme.bodyMedium(context).copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
+                    'Your dream and actions are sent to Gemini to write your scenario. Saved history stays on this device.',
+                    style: AppTheme.bodyMedium(
+                      context,
+                    ).copyWith(color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 48),
                   Container(
@@ -55,23 +52,20 @@ class AboutScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppTheme.surface,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppTheme.divider,
-                        width: 1,
-                      ),
+                      border: Border.all(color: AppTheme.divider, width: 1),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Privacy',
-                          style: AppTheme.titleSmall(context).copyWith(
-                            fontSize: 14,
-                          ),
+                          style: AppTheme.titleSmall(
+                            context,
+                          ).copyWith(fontSize: 14),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Your decisions are processed temporarily to generate text. No data is stored remotely.',
+                          'Dream text is sent to Gemini to generate your scenario. Your saved dreams and reminders stay on this device.',
                           style: AppTheme.bodySmall(context),
                         ),
                       ],

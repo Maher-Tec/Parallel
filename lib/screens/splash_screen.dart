@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'launch_screen.dart';
+import '../app_config.dart';
 
 /// Animated Splash Screen
 /// Shows the app logo with a elegant fade-in animation
@@ -50,11 +51,8 @@ class _SplashScreenState extends State<SplashScreen>
                 const LaunchScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(milliseconds: 800),
           ),
         );
@@ -117,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen>
                         stops: const [0.0, 0.5, 1.0],
                       ).createShader(bounds),
                       child: Text(
-                        'PARALLEL',
+                        AppConfig.name.toUpperCase(),
                         style: AppTheme.titleLarge(context).copyWith(
                           letterSpacing: 12,
                           fontWeight: FontWeight.w300,
@@ -130,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
                     Opacity(
                       opacity: _fadeAnimation.value * 0.7,
                       child: Text(
-                        'Two paths. One choice.',
+                        AppConfig.arabicName,
                         style: AppTheme.bodySmall(context).copyWith(
                           letterSpacing: 2,
                           color: AppTheme.textSecondary,

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Parallel App Theme
-/// Dark, literary aesthetic with calm contrast
+/// Holmi's golden dreamscape palette and shared component styles.
 class AppTheme {
-  // Colors - Deep blacks and warm off-whites
-  static const Color background = Color(0xFF0A0A0A);
-  static const Color surface = Color(0xFF141414);
-  static const Color textPrimary = Color(0xFFF5F0E8);
-  static const Color textSecondary = Color(0xFFB8B0A0);
-  static const Color accent = Color(0xFF8B7355);
-  static const Color divider = Color(0xFF2A2A2A);
+  static const Color background = Color(0xFF10111B);
+  static const Color surface = Color(0xFF1C1B27);
+  static const Color surfaceRaised = Color(0xFF292634);
+  static const Color textPrimary = Color(0xFFF7F0E4);
+  static const Color textSecondary = Color(0xFFC7BDAE);
+  static const Color accent = Color(0xFFD6B36A);
+  static const Color rose = Color(0xFFE9D3A2);
+  static const Color mint = Color(0xFFF0DDAE);
+  static const Color divider = Color(0xFF514632);
 
   /// Helper to create color with opacity (avoids deprecated withOpacity)
   static Color withAlpha(Color color, double opacity) {
@@ -91,15 +92,88 @@ class AppTheme {
       scaffoldBackgroundColor: background,
       colorScheme: const ColorScheme.dark(
         surface: background,
-        primary: textPrimary,
-        secondary: accent,
+        primary: accent,
+        secondary: rose,
         onSurface: textPrimary,
+        onPrimary: Color(0xFF211B10),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: textPrimary),
+        titleTextStyle: TextStyle(
+          color: textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: surface.withAlpha(235),
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(vertical: 9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: accent.withAlpha(38)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: surface.withAlpha(235),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        labelStyle: const TextStyle(color: textSecondary),
+        hintStyle: TextStyle(color: textSecondary.withAlpha(150)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: accent.withAlpha(45)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: accent.withAlpha(45)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: accent, width: 1.5),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style:
+            FilledButton.styleFrom(
+              backgroundColor: accent,
+              foregroundColor: const Color(0xFF211B10),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 17),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: rose.withAlpha(150), width: 0.8),
+              ),
+              elevation: 3,
+              shadowColor: accent.withAlpha(90),
+              animationDuration: const Duration(milliseconds: 220),
+            ).copyWith(
+              overlayColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.pressed)
+                    ? Colors.white.withAlpha(45)
+                    : null,
+              ),
+            ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ? accent : textSecondary,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? accent.withAlpha(90)
+              : surfaceRaised,
+        ),
       ),
       dividerColor: divider,
       textSelectionTheme: TextSelectionThemeData(

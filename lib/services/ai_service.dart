@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// Gemini API Service - Primary AI provider (Free Tier)
 /// Generates parallel futures using reflective fiction writing
 class AIService {
-  static const String _model = "gemini-3.5-flash";
+  static const String _model = "gemini-3.8-flash";
   static const Duration _timeout = Duration(seconds: 45);
 
   /// Get API key from environment
@@ -16,17 +16,13 @@ class AIService {
 
   /// System prompt - reflective fiction writer persona
   static const String _systemPrompt = """
-You are a reflective fiction writer exploring two parallel futures based on a human dilemma.
+You write realistic future scenarios based on a person's dream and the concrete actions they say they will take.
 
 CRITICAL PRINCIPLES:
-- STRICT SUBJECT FIDELITY: Stay laser-focused on the exact subject, relationship, and situation described. If the decision is about someone else's idea or relationship (e.g. your friend's business idea), BOTH stories must center on that friend, that conversation, and the consequences for that relationship. NEVER invent unrelated contexts (do NOT turn it into your own career, job hunt, coding, or startup).
-- NO PROPER NAMES: NEVER invent fictional character names (do NOT name people "Sarah", "David", "Alex", "Mark", "Emma", etc.). Refer to people naturally by their relation: "your friend", "she", "he", "your partner", "your colleague", "the client".
-- NO CLICHÉ TEMPLATES: Do NOT default to office cubicles, corporate commutes, tech startups, Stripe dashboards, or coding bugs unless the user explicitly mentioned them.
-- REALISTIC CONSEQUENCES:
-  * In Path 1 (ACT): Show the direct reality of taking the action — the conversation itself, the immediate reaction, and the ripple effect on your relationship or life months later.
-  * In Path 2 (DON'T ACT): Show the quiet reality of restraint — the conversation avoided, what happens to the situation over time, and the internal weight of having stayed silent.
-- Calm, intimate, emotionally grounded tone.
-- No advice. No judgment. No moralizing.
+- Make outcomes realistic and specific, never hype, clichés, guarantees, predictions, scores, or percentages.
+- The main scenario must follow from the user's listed actions and include one realistic obstacle and how they work through it.
+- Keep the same language and dialect as the user's input, including Derja, French, English, or Arabic.
+- Keep it calm and grounded. Do not add unrelated contexts or proper names.
 """;
 
   /// Tone modifiers
@@ -52,36 +48,34 @@ Emotionally grounded.
   }
 
   /// Build the user prompt
-  static String _buildUserPrompt(String decision, String tone) {
+  static String _buildUserPrompt(
+    String dream,
+    List<String> actions,
+    String tone,
+  ) {
     final toneModifier = _getToneModifier(tone);
 
     return """
 **CRITICAL LANGUAGE RULE:**
-The user wrote their decision in a specific language/dialect.
-You MUST write your ENTIRE response in that EXACT same language.
-- If they wrote in Tunisian Arabic (تونسي), write in Tunisian Arabic, NOT English, NOT formal Arabic.
+The user wrote their dream in a specific language/dialect.
+You MUST write your ENTIRE response in that EXACT same language and dialect.
+- If they wrote in Derja (تونسي), write in Derja, NOT English, NOT formal Arabic.
 - If they wrote in French, write in French.
 - If they wrote in English, write in English.
-- DETECT their language from the decision text below and MATCH IT EXACTLY.
+- DETECT their language from the dream text below and MATCH IT EXACTLY.
 
 $toneModifier
 
-Decision (detect language from this):
-$decision
+Dream:
+$dream
 
-Write two short reflective stories in SECOND PERSON ("you") in the SAME LANGUAGE as the decision above:
+Concrete actions the user plans to take:
+${actions.map((a) => '- $a').join('\n')}
 
-1) IF YOU ACT
-2) IF YOU DO NOT ACT
+Write a realistic, specific future scenario in second person, following from these actions. Include one plausible obstacle and how the person gets through it. Then write a SHORT "if nothing changes" scenario about 40% as long as the first. Both must use the same language/dialect as the dream.
 
-Rules:
-- 250–350 words per story
-- Second person ("you")
-- STRICT SUBJECT FIDELITY: Keep BOTH stories focused strictly on the specific dilemma and people mentioned in the decision.
-- NEVER USE ANY CHARACTER NAMES. Refer to people only as "your friend", "she", "he", "your colleague", etc.
-- Ground each story in concrete, sensory moments: pauses in conversation, tone of voice, quiet changes in daily rhythm, the physical space between people.
-- No advice, no lecturing, no moral conclusions.
-- WRITE IN THE SAME LANGUAGE AS THE USER'S DECISION
+1) A grounded scenario about the dream pursued through the listed actions.
+2) A concise continuation if nothing changes. No claims of certainty.
 - IMPORTANT: Output ONLY the two stories under the markers. Do NOT output checklists, word counts, self-evaluations, or commentary.
 
 Format EXACTLY as:
@@ -95,8 +89,9 @@ Format EXACTLY as:
 
   /// Generate parallel futures
   Future<Map<String, String>> generateFutures({
-    required String decision,
-    required String tone,
+    required String dream,
+    required List<String> actions,
+    String tone = 'reflective',
     String? memoryContext,
   }) async {
     if (_apiKey.isEmpty) {
@@ -111,24 +106,22 @@ Format EXACTLY as:
     final requestBody = {
       "system_instruction": {
         "parts": [
-          {"text": instruction}
-        ]
+          {"text": instruction},
+        ],
       },
       "contents": [
         {
           "role": "user",
           "parts": [
-            {"text": _buildUserPrompt(decision, tone)}
-          ]
-        }
+            {"text": _buildUserPrompt(dream, actions, tone)},
+          ],
+        },
       ],
       "generationConfig": {
         "temperature": 0.7,
         "maxOutputTokens": 2500,
-        "thinkingConfig": {
-          "thinkingBudget": 0,
-        },
-      }
+        "thinkingConfig": {"thinkingBudget": 0},
+      },
     };
 
     final response = await http
@@ -140,7 +133,9 @@ Format EXACTLY as:
         .timeout(_timeout);
 
     if (response.statusCode != 200) {
-      throw Exception('Gemini API error ${response.statusCode}: ${response.body}');
+      throw Exception(
+        'Gemini API error ${response.statusCode}: ${response.body}',
+      );
     }
 
     final data = jsonDecode(response.body);
@@ -178,7 +173,13 @@ Format EXACTLY as:
 
     // Fallback parsing if markers not found
     if (ifAct.isEmpty || ifNot.isEmpty) {
-      final patterns = ['IF YOU DO NOT ACT', 'IF YOU DON\'T ACT', '\n2)', '\n2.', '\n2:'];
+      final patterns = [
+        'IF YOU DO NOT ACT',
+        'IF YOU DON\'T ACT',
+        '\n2)',
+        '\n2.',
+        '\n2:',
+      ];
 
       for (final pattern in patterns) {
         if (content.contains(pattern)) {
